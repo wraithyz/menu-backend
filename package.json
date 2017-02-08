@@ -1,0 +1,12 @@
+{
+  "name": "redux-test",
+  "version": "0.0.1",
+  "description": "",
+  "main": "server.js",
+  "dependencies": {
+    "express": "^4.14.0",
+    "moment": "^2.15.1"
+  },
+  "author": "",
+  "license": "ISC"
+}
