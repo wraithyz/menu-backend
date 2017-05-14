@@ -11,10 +11,11 @@ var errorMenu = {
 
 const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
 
-let tayMenu = [];
+let tayMenu;
 let tamkMenu = [];
-let ttyMenu = [];
-let lastMenuFetch = moment();
+let ttyMenu;
+let lastTayMenuFetch;
+let lastTtyMenuFetch;
 
 app.set('port', process.env.PORT || 3000);
 
@@ -75,7 +76,8 @@ function juvenesParse(data, day) {
       for (let food of category.MenuItems) {
         if (food.Name.length === 0) continue;
         courses.push({
-          name:  food.Name,
+          name_en: food.Name_EN,
+          name_fi: food.Name_FI,
           diets: food.Diets,
         });
       }
@@ -146,7 +148,8 @@ function parseSodexo(host, path, restaurantName) {
           for (let today of daysMenu) {
             let courses = [];
             courses.push({
-              name: today.title_fi,
+              name_fi: today.title_fi,
+              name_en: today.title_en,
               diets: today.properties,
             })
             menu[key].push({
@@ -199,13 +202,20 @@ function parseJuvenes(host, path, restaurantName) {
 
 app.get("/api/tay", function(req, res) {
   const now = moment();
-  if (tayMenu.length !== 0 && now.isSame(lastMenuFetch, 'd')) {
+  if (lastTayMenuFetch && now.isSame(lastTayMenuFetch, 'd')) {
       console.log('cache');
       res.json(tayMenu);
   } else {
     console.log('new');
-    lastMenuFetch = moment();
-    tayMenu = [];
+    lastTayMenuFetch = moment();
+    tayMenu = {
+      monday: [],
+      tuesday: [],
+      wednesday: [],
+      thursday: [],
+      friday: [],
+      saturday: [],
+    };
     // 3 = fusion
     // 5 = vegebar
     // 52 = staff
@@ -221,11 +231,14 @@ app.get("/api/tay", function(req, res) {
     const tayJuvenes = parseJuvenes('www.juvenes.fi', '/DesktopModules/Talents.LunchMenu/LunchMenuServices.asmx/GetMenuByWeekday?KitchenId=13&MenuTypeId=60&', 'Juvenes ravintola (Päätalo)');
     const tayJuvenesVege = parseJuvenes('www.juvenes.fi', `/DesktopModules/Talents.LunchMenu/LunchMenuServices.asmx/GetMenuByWeekday?KitchenId=13&MenuTypeId=5&`, 'Juvenes Vegebar');
     const tayJuvenesFusion = parseJuvenes('www.juvenes.fi', `/DesktopModules/Talents.LunchMenu/LunchMenuServices.asmx/GetMenuByWeekday?KitchenId=13&MenuTypeId=3&`, 'Juvenes Fusion Kitchen');
-    Promise.all([tayAmica, taySodexo, tayJuvenes, tayJuvenesVege, tayJuvenesFusion])
+    Promise.all([taySodexo, tayAmica, tayJuvenes, tayJuvenesVege, tayJuvenesFusion])
       .then((data) => {
         if (data) {
           for (let i = 0; i < data.length; i++) {
-            tayMenu.push(data[i]);
+            let dayMenu = data[i];
+            for (day in dayMenu.menu) {
+              tayMenu[day].push({restaurant: dayMenu.restaurant, menu: dayMenu.menu[day]})
+            }
           }
           res.json(tayMenu);
         }
@@ -238,13 +251,20 @@ app.get("/api/tay", function(req, res) {
 
 app.get("/api/tty", function(req, res) {
   const now = moment();
-  if (ttyMenu.length !== 0 && now.isSame(lastMenuFetch, 'd')) {
+  if (lastTtyMenuFetch && now.isSame(lastTtyMenuFetch, 'd')) {
       console.log('cache');
       res.json(ttyMenu);
   } else {
     console.log('new');
-    lastMenuFetch = moment();
-    ttyMenu = [];
+    lastTtyMenuFetch = moment();
+    ttyMenu = {
+      monday: [],
+      tuesday: [],
+      wednesday: [],
+      thursday: [],
+      friday: [],
+      saturday: [],
+    };
     let firstDayofWeek = moment();
     firstDayofWeek.startOf('isoweek');
     let date = now.date();
@@ -264,10 +284,12 @@ app.get("/api/tty", function(req, res) {
     Promise.all([ttyAmica, ttySodexo, ttyJuvenes, ttyJuvenesBar, ttyJuvenesFusion])
     .then((data) => {
       if (data) {
-        let stuff = {};
         for (let i = 0; i < data.length; i++) {
-          ttyMenu.push(data[i]);
-        }
+            let dayMenu = data[i];
+            for (day in dayMenu.menu) {
+              ttyMenu[day].push({restaurant: dayMenu.restaurant, menu: dayMenu.menu[day]})
+            }
+          }
         res.json(ttyMenu);
       }
     })
