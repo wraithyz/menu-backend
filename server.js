@@ -149,7 +149,7 @@ function parseSodexo(host, path, restaurantName) {
               name: today.title_fi,
               diets: today.properties,
             })
-            menu[key  ].push({
+            menu[key].push({
               price: today.price,
               courses: courses,
             });
@@ -201,7 +201,7 @@ app.get("/api/tay", function(req, res) {
   const now = moment();
   if (tayMenu.length !== 0 && now.isSame(lastMenuFetch, 'd')) {
       console.log('cache');
-      res.json(JSON.stringify(tayMenu));
+      res.json(tayMenu);
   } else {
     console.log('new');
     lastMenuFetch = moment();
@@ -227,7 +227,7 @@ app.get("/api/tay", function(req, res) {
           for (let i = 0; i < data.length; i++) {
             tayMenu.push(data[i]);
           }
-          res.json(JSON.stringify(tayMenu));
+          res.json(tayMenu);
         }
       })
       .catch((err) => {
@@ -240,7 +240,7 @@ app.get("/api/tty", function(req, res) {
   const now = moment();
   if (ttyMenu.length !== 0 && now.isSame(lastMenuFetch, 'd')) {
       console.log('cache');
-      res.json(JSON.stringify(ttyMenu));
+      res.json(ttyMenu);
   } else {
     console.log('new');
     lastMenuFetch = moment();
@@ -264,10 +264,11 @@ app.get("/api/tty", function(req, res) {
     Promise.all([ttyAmica, ttySodexo, ttyJuvenes, ttyJuvenesBar, ttyJuvenesFusion])
     .then((data) => {
       if (data) {
+        let stuff = {};
         for (let i = 0; i < data.length; i++) {
           ttyMenu.push(data[i]);
         }
-        res.json(JSON.stringify(ttyMenu));
+        res.json(ttyMenu);
       }
     })
     .catch((err) => {
