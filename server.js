@@ -77,7 +77,7 @@ function juvenesParse(data, day) {
         if (food.Name.length === 0) continue;
         courses.push({
           name_en: food.Name_EN,
-          name_fi: food.Name_FI,
+          name: food.Name_FI,
           diets: food.Diets,
         });
       }
@@ -148,7 +148,7 @@ function parseSodexo(host, path, restaurantName) {
           for (let today of daysMenu) {
             let courses = [];
             courses.push({
-              name_fi: today.title_fi,
+              name: today.title_fi,
               name_en: today.title_en,
               diets: today.properties,
             })
